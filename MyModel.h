@@ -8,6 +8,11 @@ class MyModel
 {
     private:
 
+        // Data
+        static std::vector<double> t, y, log_y;
+
+        // Parameters
+        double A, T, phi, L;
 
     public:
         // Constructor only gives size of params
