@@ -26,7 +26,7 @@ void MyModel::from_prior(DNest4::RNG& rng)
 {
     C = -10.0 + 20.0*rng.rand();
     A = 5.0*rng.rand();
-    T = 360.0 + 10.0*rng.rand();
+    T = 365.0 + 0.5*rng.rand();
     phi = 2.0*M_PI*rng.rand();
     L = 5.0*rng.rand(); // Attenuation on log scale
 }
@@ -50,7 +50,7 @@ double MyModel::perturb(DNest4::RNG& rng)
     else if(which == 2)
     {
         T += 10.0*rng.randh();
-        DNest4::wrap(T, 360.0, 370.0);
+        DNest4::wrap(T, 365.0, 365.5);
     }
     else if(which == 3)
     {
