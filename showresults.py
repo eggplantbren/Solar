@@ -17,3 +17,12 @@ for i in range(min([100, posterior_sample.shape[0]])):
 
 plt.show()
 
+
+top = np.empty(posterior_sample.shape[0])
+for i in range(posterior_sample.shape[0]):
+    C, A, T, phi, L = posterior_sample[i, :]
+    top[i] = np.exp(C + A)
+plt.hist(top, 100)
+print(top.mean(), top.std())
+plt.show()
+
