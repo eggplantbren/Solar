@@ -24,8 +24,8 @@ MyModel::MyModel()
 
 void MyModel::from_prior(DNest4::RNG& rng)
 {
-    // Lognormal
-    A = exp(10.0*rng.randn());
+    C = -10.0 + 20.0*rng.rand();
+    A = 5.0*rng.rand();
     T = 360.0 + 10.0*rng.rand();
     phi = 2.0*M_PI*rng.rand();
     L = 5.0*rng.rand(); // Attenuation on log scale
@@ -35,22 +35,24 @@ double MyModel::perturb(DNest4::RNG& rng)
 {
     double logH = 0.0;
 
-    int which = rng.rand_int(4);
+    int which = rng.rand_int(5);
 
     if(which == 0)
     {
-        A = log(A);
-        logH -= -0.5*pow(A/10.0, 2);
-        A += 10.0*rng.randh();
-        logH += -0.5*pow(A/10.0, 2);
-        A = exp(A);
+        C += 20.0*rng.randh();
+        DNest4::wrap(C, -10.0, 10.0);
     }
     else if(which == 1)
+    {
+        A += 5.0*rng.randh();
+        DNest4::wrap(A, 0.0, 5.0);
+    }
+    else if(which == 2)
     {
         T += 10.0*rng.randh();
         DNest4::wrap(T, 360.0, 370.0);
     }
-    else if(which == 2)
+    else if(which == 3)
     {
         phi += 2.0*M_PI*rng.randh();
         DNest4::wrap(phi, 0.0, 2.0*M_PI);
@@ -70,11 +72,10 @@ double MyModel::log_likelihood() const
 
     for(size_t i=0; i<y.size(); ++i)
     {
-        double top = A*sin(2.0*M_PI*t[i]/T + phi);
+        double top = C + A*sin(2.0*M_PI*t[i]/T + phi);
 
         if(log_y[i] > top)
-            logL += -1E300;
-
+           logL += -1E300;
         logL += -log(L) + (log_y[i] - top)/L;
     }
 
@@ -84,11 +85,11 @@ double MyModel::log_likelihood() const
 void MyModel::print(std::ostream& out) const
 {
     out << std::setprecision(12);
-    out << A << ' ' << T << ' ' << phi << ' ' << L;
+    out << C << ' ' << A << ' ' << T << ' ' << phi << ' ' << L;
 }
 
 std::string MyModel::description() const
 {
-    return std::string("A T phi L");
+    return std::string("C A T phi L");
 }
 
