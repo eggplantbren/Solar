@@ -14,7 +14,7 @@ for i in range(min([100, posterior_sample.shape[0]])):
     C, A, T, phi, L = posterior_sample[i, :]
     top = C + A*np.sin(2.0*np.pi*t/T + phi)
     plt.plot(t, np.exp(top), color="g", alpha=0.1)
-
+    plt.plot(t, np.exp(top - L), color="r", alpha=0.1)
 plt.show()
 
 
