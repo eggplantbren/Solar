@@ -12,7 +12,12 @@ class MyModel
         static std::vector<double> t, y, log_y;
 
         // Parameters
-        double C, A, T, phi, L;
+        double C, A, T, phi;
+
+        // AR(1) parameters for logits
+        double mu;
+        double beta;
+        double L; 
 
     public:
         // Constructor only gives size of params

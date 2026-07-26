@@ -28,14 +28,16 @@ void MyModel::from_prior(DNest4::RNG& rng)
     A = 5.0*rng.rand();
     T = 365.0 + 0.5*rng.rand();
     phi = 2.0*M_PI*rng.rand();
-    L = 5.0*rng.rand(); // Attenuation on log scale
+    mu = -5.0 + 5.0*rng.rand();
+    beta = exp(log(1E-3) + log(1E3)*rng.rand());
+    L = exp(log(0.1) + log(1E3)*rng.rand());
 }
 
 double MyModel::perturb(DNest4::RNG& rng)
 {
     double logH = 0.0;
 
-    int which = rng.rand_int(5);
+    int which = rng.rand_int(7);
 
     if(which == 0)
     {
@@ -57,10 +59,24 @@ double MyModel::perturb(DNest4::RNG& rng)
         phi += 2.0*M_PI*rng.randh();
         DNest4::wrap(phi, 0.0, 2.0*M_PI);
     }
+    else if(which == 4)
+    {
+        mu += 5.0*rng.randh();
+        DNest4::wrap(mu, -5.0, 0.0);
+    }
+    else if(which == 5)
+    {
+        beta = log(beta);
+        beta += log(1E3)*rng.randh();
+        DNest4::wrap(beta, log(1E-3), log(1.0));
+        beta = exp(beta);
+    }
     else
     {
-        L += 5.0*rng.randh();
-        DNest4::wrap(L, 0.0, 5.0);
+        L = log(L);
+        L += log(1E3)*rng.randh();
+        DNest4::wrap(L, log(0.1), log(1E2));
+        L = exp(L);
     }
 
     return logH;
@@ -70,13 +86,28 @@ double MyModel::log_likelihood() const
 {
     double logL = 0.0;
 
+    std::vector<double> fracs(y.size());
+    std::vector<double> logits(y.size());
     for(size_t i=0; i<y.size(); ++i)
     {
-        double top = C + A*sin(2.0*M_PI*t[i]/T + phi);
+        double top = exp(C + A*sin(2.0*M_PI*t[i]/T + phi));
+        fracs[i] = y[i]/top;
+        logits[i] = log(fracs[i]/(1.0 - fracs[i]));
+    }
 
-        if(log_y[i] > top)
-           logL += -1E300;
-        logL += -log(L) + (log_y[i] - top)/L;
+    // sigma^2 = a^2*sigma^2 + b^2
+    // sigma^2(1 - a^2) = b^2
+    double alpha = exp(-1.0/L);
+    double sigma = beta/sqrt(1.0 - alpha*alpha);
+    logL += -0.5*log(2.0*M_PI*sigma*sigma)
+            -0.5*pow(logits[0] - mu, 2)/(sigma*sigma)
+            - log(y[0]) - log(1.0 - fracs[0]);  // Jacobian
+    for(size_t i=1; i<logits.size(); ++i)
+    {
+        double expected = mu + alpha*(logits[i-1] - mu);
+        logL += -0.5*log(2.0*M_PI*beta*beta)
+                -0.5*pow(logits[i] - expected, 2)/(beta*beta)
+                - log(y[i]) - log(1.0 - fracs[i]);  // Jacobian
     }
 
     return logL;
@@ -85,11 +116,12 @@ double MyModel::log_likelihood() const
 void MyModel::print(std::ostream& out) const
 {
     out << std::setprecision(12);
-    out << C << ' ' << A << ' ' << T << ' ' << phi << ' ' << L;
+    out << C << ' ' << A << ' ' << T << ' ' << phi << ' ';
+    out << mu << ' ' << beta << ' ' << L;
 }
 
 std::string MyModel::description() const
 {
-    return std::string("C A T phi L");
+    return std::string("C A T phi mu beta L");
 }
 
