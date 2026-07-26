@@ -29,7 +29,7 @@ void MyModel::from_prior(DNest4::RNG& rng)
     T = 365.0 + 0.5*rng.rand();
     phi = 2.0*M_PI*rng.rand();
     mu = -5.0 + 10.0*rng.rand();
-    beta = exp(log(1E-3) + log(1E3)*rng.rand());
+    beta = exp(log(1E-3) + log(1E4)*rng.rand());
     L = exp(log(0.1) + log(1E3)*rng.rand());
 }
 
@@ -67,8 +67,8 @@ double MyModel::perturb(DNest4::RNG& rng)
     else if(which == 5)
     {
         beta = log(beta);
-        beta += log(1E3)*rng.randh();
-        DNest4::wrap(beta, log(1E-3), log(1.0));
+        beta += log(1E4)*rng.randh();
+        DNest4::wrap(beta, log(1E-3), log(10.0));
         beta = exp(beta);
     }
     else
