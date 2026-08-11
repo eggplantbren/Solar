@@ -9,11 +9,12 @@ model = "model
     A ~ dunif(0, 10)
 
     phi ~ dunif(0, 2.0*pi)
+    k ~ dunif(0, 1)
 
     for(i in 1:length(y))
     {
         top[i] <- exp(C + A*sin(2*pi*t[i]/period + phi))
-        y[i] ~ dnorm(top[i], 1/(sd*top[i])^2)T(0, top[i])
+        y[i] ~ dnorm(k*top[i], 1/(sd*top[i])^2)T(0, top[i])
     }
 }
 "
@@ -24,7 +25,7 @@ data = read.table("data.txt", header=FALSE)
 colnames(data) = c("t", "y")
 
 # Variables to monitor
-variable_names = c("A", "C", "sd", "phi")
+variable_names = c("A", "C", "sd", "phi", "k")
 
 # How many proper steps?
 steps = 100000
