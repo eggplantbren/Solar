@@ -14,7 +14,7 @@ tot = np.empty(posterior_sample.shape[0])
 peak = np.empty(posterior_sample.shape[0])
 for i in range(posterior_sample.shape[0]):
     C, A, T, phi, mu, beta, L = posterior_sample[i, :]
-    top = np.exp(C + A*np.sin(2.0*np.pi*t/T + phi))
+    top = C + A*C*np.sin(2.0*np.pi*t/T + phi)
     middle = top/(1.0 + np.exp(-mu))
     if i < 100:
         plt.plot(t,    top, color="g", alpha=0.1)

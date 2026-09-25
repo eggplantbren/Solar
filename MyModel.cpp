@@ -24,8 +24,8 @@ MyModel::MyModel()
 
 void MyModel::from_prior(DNest4::RNG& rng)
 {
-    C = -10.0 + 20.0*rng.rand();
-    A = 5.0*rng.rand();
+    C = 0.0 + 200.0*rng.rand();
+    A = rng.rand();
     T = 365.0 + 0.5*rng.rand();
     phi = 2.0*M_PI*rng.rand();
     mu = -5.0 + 10.0*rng.rand();
@@ -41,13 +41,13 @@ double MyModel::perturb(DNest4::RNG& rng)
 
     if(which == 0)
     {
-        C += 20.0*rng.randh();
-        DNest4::wrap(C, -10.0, 10.0);
+        C += 200.0*rng.randh();
+        DNest4::wrap(C, 0.0, 200.0);
     }
     else if(which == 1)
     {
-        A += 5.0*rng.randh();
-        DNest4::wrap(A, 0.0, 5.0);
+        A += rng.randh();
+        DNest4::wrap(A, 0.0, 1.0);
     }
     else if(which == 2)
     {
@@ -90,7 +90,7 @@ double MyModel::log_likelihood() const
     std::vector<double> logits(y.size());
     for(size_t i=0; i<y.size(); ++i)
     {
-        double top = exp(C + A*sin(2.0*M_PI*t[i]/T + phi));
+        double top = (C + A*C*sin(2.0*M_PI*t[i]/T + phi));
         fracs[i] = y[i]/top;
         logits[i] = log(fracs[i]/(1.0 - fracs[i]));
     }
